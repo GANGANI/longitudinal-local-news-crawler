@@ -20,7 +20,7 @@ Usable websites: 9315 + 13 + 1 + 9 = 9338
 | 409              | Conflict                  | Request conflicts with the current state of the server.                                           | 6               |
 | 410              | Gone                      | Resource is no longer available and was intentionally removed.                                    | 15              |
 | 412              | Precondition Failed       | Server does not meet one of the request’s preconditions.                                          | 1               |
-| 418              | I'm a teapot 🫖           | Joke status code from RFC 2324; sometimes used to block bots.                                     | 1               |
+| 418              | I'm a teapot              | Joke status code from RFC 2324; sometimes used to block bots.                                     | 1               |
 | 429              | Too Many Requests         | Client sent too many requests; rate limiting.                                                     | 346             |
 | 500              | Internal Server Error     | Server encountered an unexpected condition.                                                       | 24              |
 | 501              | Not Implemented           | Server does not support the requested functionality.                                              | 1               |
