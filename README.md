@@ -87,17 +87,23 @@ Usable websites: 9315 + 13 + 1 + 9 = 9338
 | WA    | 145      | 123      |
 | WI    | 192      | 104      |
 | WV    | 82       | 17       |
+| WY    | 54       | 33       |
+| **TOTAL** | **9338** | **4742** |
 
 Summary
 - Max number of websites per website: 657 (CA)
 - Min number of websites per website: 32 (DE)
-  
-Processing time for http://www.adn.com/: 450.15 seconds
-Processing time for http://www.alaskajournal.com/: 366.24 seconds
-Processing time for http://www.alaska-native-news.com/: 365.13 seconds
-Processing time for http://www.deltawindonline.com/: 373.37 seconds
 
-| WY    | 54       | 33       |
-| **TOTAL** | **9338** | **4742** |
+  
+Processing time Samples
+- for http://www.adn.com/: 450.15 seconds
+- for http://www.alaskajournal.com/: 366.24 seconds
+- for http://www.alaska-native-news.com/: 365.13 seconds
+- for http://www.deltawindonline.com/: 373.37 seconds
+
+If we take processing time 480 seconds per website, per day, only 309 (86400/280) websites can process
+
+So required number of parallel batches: 9338/309 = 31
+
 
 
