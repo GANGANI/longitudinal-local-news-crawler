@@ -34,6 +34,7 @@ Usable websites: 9315 + 13 + 1 + 9 = 9338
 | 999              | Bot Block                 | Non-standard code used (e.g., by LinkedIn) to block bots or non-browser requests.                 | 1               |
 | None (Failed)    | Request Failed            | Request couldn’t be completed (e.g., network error, timeout, DNS failure).                        | 1449            |
 
+
 | State | Good (2xx/3xx) | Bad/None |
 |-------|----------|----------|
 | AK    | 82       | 46       |
@@ -86,6 +87,16 @@ Usable websites: 9315 + 13 + 1 + 9 = 9338
 | WA    | 145      | 123      |
 | WI    | 192      | 104      |
 | WV    | 82       | 17       |
+
+Summary
+- Max number of websites per website: 657 (CA)
+- Min number of websites per website: 32 (DE)
+  
+Processing time for http://www.adn.com/: 450.15 seconds
+Processing time for http://www.alaskajournal.com/: 366.24 seconds
+Processing time for http://www.alaska-native-news.com/: 365.13 seconds
+Processing time for http://www.deltawindonline.com/: 373.37 seconds
+
 | WY    | 54       | 33       |
 | **TOTAL** | **9338** | **4742** |
 
