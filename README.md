@@ -2,6 +2,8 @@
 
 ## Preprocess local news media website dataset
 
+Usable websites: 9139 + 34 + 1 = 9174
+
 | Status Code     | Meaning                   | Explanation                                                                                        | Number of Links |
 |------------------|---------------------------|----------------------------------------------------------------------------------------------------|-----------------|
 | 200              | OK                        | Request succeeded; server returned the expected content.                                           | 9139            |
