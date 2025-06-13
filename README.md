@@ -101,9 +101,9 @@ Processing time Samples
 - for http://www.alaska-native-news.com/: 365.13 seconds
 - for http://www.deltawindonline.com/: 373.37 seconds
 
-If we take processing time **480 seconds** per website, per day, only **309 (86400/280)** websites can process
+If we take processing time as **480 seconds** per website, per day, only **180 (86400/480)** websites can process
 
-So required number of parallel batches: **9338/309 = 31**
+So required number of parallel batches: **9338/180 = 52**
 
 
 
