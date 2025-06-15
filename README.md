@@ -103,7 +103,8 @@ Processing time Samples
 
 If we take processing time as **480 seconds** per website, per day, only **180 (86400/480)** websites can process
 
-So required number of parallel batches: **9338/180 = 52**
+So required number of parallel batches: 
+          **9338/180 = 52**
 
 
 
