@@ -1,6 +1,6 @@
-# Longituinal Local News Repo
+# Longitudinal Local News Repo
 
-## Preprocess local news media website dataset
+## 3DLNews Local news media website dataset Analysis
 
 Usable websites: 9315 + 13 + 1 + 9 = 9338
 
