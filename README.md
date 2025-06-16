@@ -147,6 +147,7 @@ So it seems we require ~1 TB of bandwidth daily
 - Generate a report monthly/weekly summarizing archived, failed, skipped, per state
 - Notify if the errors exceed a threshold.
 
-
+## Questions
+- Executing docker in HPC
 
 
