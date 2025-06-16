@@ -101,13 +101,15 @@ Processing time Samples
 - for http://www.alaska-native-news.com/: 365.13 seconds
 - for http://www.deltawindonline.com/: 373.37 seconds
 
-If we take processing time as **480 seconds** per website, per day, only **180 (86400/480)** websites can process
+It is taking nearly **480 seconds** processing time per website. 
 
-Required parallelism = Total time / seconds per day
-                     = (9,338 websites × 480 sec) / 86,400 sec
-                     = 52 workers
+**Sequentialy** = 9338 websites × 480 sec ≈ 4,481,600 sec ≈ 52 days
 
-High-Level Strategy
+**Required parallelism** = Total time / seconds per day
+                         = (9,338 websites × 480 sec) / 86,400 sec
+                         = 52 workers
+
+**High-Level Strategy**
 - Split the 9338 websites into batches (200 per job)
 - Multiple HPC jobs in parallel
 
