@@ -103,8 +103,9 @@ Processing time Samples
 
 If we take processing time as **480 seconds** per website, per day, only **180 (86400/480)** websites can process
 
-So required number of parallel batches: 
-          **9338/180 = 52**
+Required parallelism = Total time / seconds per day
+                     = (9,338 websites × 480 sec) / 86,400 sec
+                     = 52 workers
 
 
 
