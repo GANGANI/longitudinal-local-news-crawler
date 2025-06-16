@@ -105,13 +105,22 @@ It is taking nearly **480 seconds** processing time per website.
 
 **Sequentially** = 9338 websites * 480 sec = 4,481,600 sec = 52 days (To run all websites, it will take 52 days)
 
+Within 1 day, only 180 websites (86400/480)
+To parallelize 52 tasks should run in parallel (9339/180)
+
 **Required parallelism** = Total time / seconds per day
                          = (9,338 websites * 480 sec) / 86,400 sec
                          = 52 workers
 
 **High-Level Strategy**
-- Split the 9338 websites into batches (200 per job)
-- Multiple HPC jobs in parallel (5 jobs)
+- Split the 9338 websites into batches (180 per job)
+- Multiple HPC jobs in parallel (52 jobs)
+
+**Tasks for Cron Jobs**
+- Daily, check if batch jobs are still running or have failed. If it fails, send an email
+- Verify uploads and delete warcz files weekly
+- Generate a report monthly/weekly summarizing archived, failed, skipped, per state
+- Notify if the errors exceed a threshold.
 
 
 
