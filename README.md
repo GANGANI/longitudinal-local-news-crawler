@@ -95,29 +95,53 @@ Summary
 - **Min number of websites per website: 32 (DE)**
 
   
-Processing time Samples
-- for http://www.adn.com/: 450.15 seconds
-- for http://www.alaskajournal.com/: 366.24 seconds
-- for http://www.alaska-native-news.com/: 365.13 seconds
-- for http://www.deltawindonline.com/: 373.37 seconds
+## Processing time 
 
-It is taking nearly **480 seconds** processing time per website. 
+  It is taking nearly **480 seconds** processing time per website. 
+  
+  **Sequentially** = 9338 websites * 480 sec = 4,481,600 sec = 52 days (To run all websites, it will take 52 days)
+  
+  **Required parallelism** = Total time / seconds per day
+                           = (9,338 websites * 480 sec) / 86,400 sec
+                           = 52 workers
+                           
+  - Within 1 day, only 180 websites (86400/480)
+  - To parallelize 52 tasks should run in parallel (9339/180)
+  
+  
+  **High-Level Strategy**
+  - Split the 9338 websites into batches (180 per job)
+  - Multiple HPC jobs in parallel (52 jobs)
 
-**Sequentially** = 9338 websites * 480 sec = 4,481,600 sec = 52 days (To run all websites, it will take 52 days)
+## Storage requirements
 
-**Required parallelism** = Total time / seconds per day
-                         = (9,338 websites * 480 sec) / 86,400 sec
-                         = 52 workers
-                         
-- Within 1 day, only 180 websites (86400/480)
-- To parallelize 52 tasks should run in parallel (9339/180)
+- I have collected wacz files for AK state for june 13, 14, 15, 16 (But from 16th, it has been stopped due to lack of space)
+- The maximum file size is 5GB(us-local-news-data-AK-2025-6/14/kyuk.org/kyuk-org-20250614T161710.wacz)
+- The minimum file size is 4MB(us-local-news-data-AK-2025-6/15/650keni.iheart.com/650keni-iheart-com-20250615T142607.wacz)
+- On average 200MB per file(770 items, totalling 146.8 GB)
 
+## Estimated Bandwidth Usage
 
-**High-Level Strategy**
-- Split the 9338 websites into batches (180 per job)
-- Multiple HPC jobs in parallel (52 jobs)
+1. Website Crawling
+- Average crawl size per site: ~50 MB 
+- Per day: 9338 × 50 MB avg = ~466 GB/day (just for crawling)
 
-**Tasks for Cron Jobs**
+2. WACZ Uploading
+A single .wacz file can be:
+- Small: ~5 MB
+- Large: 100–300 MB (pages with media)
+- Estimate: average 50 MB per WACZ
+- 9338 × 50 MB = ~466 GB/day upload bandwidth
+
+3. Total
+- Crawling	~466 GB (download)
+- Uploading	~466 GB (upload)
+- Total	~900–1000 GB/day
+
+So it seems we require ~1 TB of bandwidth daily
+
+## Tasks for Cron Jobs
+- First store WACZ locally, then batch-upload periodically using a cron job (every hour)
 - Daily, check if batch jobs are still running or have failed. If it fails, send an email
 - Verify uploads and delete warcz files weekly
 - Generate a report monthly/weekly summarizing archived, failed, skipped, per state
