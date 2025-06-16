@@ -2,7 +2,12 @@
 
 ## 3DLNews Local news media website dataset Analysis
 
-Usable websites: 9315 + 13 + 1 + 9 = 9338
+**Total Usable Websites**:  
+9315 (200) + 13 (202) + 1 (301) + 9 (307) = **9338 websites**
+
+---
+
+### HTTP Status Summary
 
 | Status Code     | Meaning                   | Explanation                                                                                       | Number of Links |
 |------------------|---------------------------|---------------------------------------------------------------------------------------------------|-----------------|
@@ -34,6 +39,7 @@ Usable websites: 9315 + 13 + 1 + 9 = 9338
 | 999              | Bot Block                 | Non-standard code used (e.g., by LinkedIn) to block bots or non-browser requests.                 | 1               |
 | None (Failed)    | Request Failed            | Request couldn’t be completed (e.g., network error, timeout, DNS failure).                        | 1449            |
 
+### Status by U.S. State
 
 | State | Good (2xx/3xx) | Bad/None |
 |-------|----------|----------|
@@ -97,16 +103,14 @@ Summary
   
 ## Processing time 
 
-  It is taking nearly **480 seconds** processing time per website. 
-  
-  **Sequentially** = 9338 websites * 480 sec = 4,481,600 sec = 52 days (To run all websites, it will take 52 days)
-  
-  **Required parallelism** = Total time / seconds per day
+- **Estimated time per website**: approximately 480 seconds
+- **Sequentially** = 9338 websites * 480 sec = 4,481,600 sec = 52 days (To run all websites, it will take 52 days)
+- **Required parallelism** = Total time / seconds per day
                            = (9,338 websites * 480 sec) / 86,400 sec
                            = 52 workers
                            
   - Within 1 day, only 180 websites (86400/480)
-  - To parallelize 52 tasks should run in parallel (9339/180)
+  - To parallelize, 52 tasks should run in parallel (9339/180)
   
   
   **High-Level Strategy**
@@ -116,6 +120,7 @@ Summary
 ## Storage requirements
 
 - I have collected wacz files for AK state for june 13, 14, 15, 16 (But from 16th, it has been stopped due to lack of space)
+- Eventhough above analysis shows, AK state has 82 working websites, I only got results from61 websites.
 - The maximum file size is 5GB(us-local-news-data-AK-2025-6/14/kyuk.org/kyuk-org-20250614T161710.wacz)
 - The minimum file size is 4MB(us-local-news-data-AK-2025-6/15/650keni.iheart.com/650keni-iheart-com-20250615T142607.wacz)
 - On average 200MB per file(770 items, totalling 146.8 GB)
