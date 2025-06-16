@@ -105,12 +105,13 @@ It is taking nearly **480 seconds** processing time per website.
 
 **Sequentially** = 9338 websites * 480 sec = 4,481,600 sec = 52 days (To run all websites, it will take 52 days)
 
-Within 1 day, only 180 websites (86400/480)
-To parallelize 52 tasks should run in parallel (9339/180)
-
 **Required parallelism** = Total time / seconds per day
                          = (9,338 websites * 480 sec) / 86,400 sec
                          = 52 workers
+                         
+- Within 1 day, only 180 websites (86400/480)
+- To parallelize 52 tasks should run in parallel (9339/180)
+
 
 **High-Level Strategy**
 - Split the 9338 websites into batches (180 per job)
