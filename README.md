@@ -107,5 +107,9 @@ Required parallelism = Total time / seconds per day
                      = (9,338 websites × 480 sec) / 86,400 sec
                      = 52 workers
 
+High-Level Strategy
+- Split the 9338 websites into batches (200 per job)
+- Multiple HPC jobs in parallel
+
 
 
