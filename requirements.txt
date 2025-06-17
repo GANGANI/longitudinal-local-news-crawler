@@ -1,0 +1,4 @@
+feedparser
+requests
+bs4
+storysniffer
