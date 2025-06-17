@@ -31,11 +31,12 @@ def get_arguments():
     parser.add_argument("--max_articles", type=int, default=5, help="Maximum number of articles to scrape per publication")
     parser.add_argument("--log", default="news_scraper.log", help="Path to log file")
     parser.add_argument("--log_level", default="INFO", help="Logging level (DEBUG, INFO, WARNING, ERROR, CRITICAL)")
-    parser.add_argument("--upload_identifier", default="us-local-news-data-va-2025-06", help="Internet Archive identifier")
     parser.add_argument("--mediatype", default="web", help="Media type for Internet Archive upload")
     parser.add_argument("--collection", default="us-local-news-data", help="Collection name / directory prefix")
     parser.add_argument("--uploader", default="Alexander C. Nwala <alexandernwala@gmail.com>", help="Uploader identity")
     parser.add_argument("--time_limit", type=int, default=360, help="Time limit (in seconds) for archiving subprocess")
+    parser.add_argument("--collection_directory", default="collection", help="Directory to collect warcz files")
+    parser.add_argument("--tmp_directory", default="tmp", help="Directory to temporarily collect warcz files")
     return parser.parse_args()
 
 HEADERS = {
@@ -76,18 +77,73 @@ def extract_article_urls_from_html(html_content, base_url):
         for link in soup.find_all("a", href=True)
     }
 
-# Update archive function to take args
-def archive(seed_urls, archive_file_name, directory, args):
+
+
+def upload_wacz(directory, archive_file_name, item_identifier, upload_dest_file, args):
     try:
+        src_file = os.path.join(directory, f"{archive_file_name}.wacz")
+        logging.info(f'Uploading to Internet Archive: {item_identifier}/{upload_dest_file}')
+        upload(
+            item_identifier,
+            files={upload_dest_file: src_file},
+            metadata={
+                'collection': args.collection,
+                'uploader': args.uploader,
+                'mediatype': args.mediatype
+            }
+        )
+        logging.info(f'Successfully uploaded: item_identifier/{upload_dest_file}')
+    except Exception as e:
+        logging.error(f"Error Uploading {item_identifier}/{upload_dest_file}: {e}")
+
+
+def move_wacz(directory, archive_file_name, tmp_directory):
+    try:
+        logging.info(f"Started moving warcz file {archive_file_name}")
         os.makedirs(directory, exist_ok=True)
-        seed_file_path = os.path.join(directory, f"{archive_file_name}.txt")
+        wacz_file = os.path.join(tmp_directory, 'collections', archive_file_name, f"{archive_file_name}.wacz")
+        dest_path = os.path.join(directory, f"{archive_file_name}.wacz")
+        if os.path.exists(wacz_file):
+            shutil.move(wacz_file, directory)
+            logging.info(f"Moved WACZ to: {directory}")
+        else:
+            logging.warning(f"WACZ file not found: {wacz_file}")
+    except Exception as e:
+        logging.error(f"Error moving WACZ file: {e}")
+
+
+def delete_warc_dir(archive_file_name, tmp_directory):
+    try:
+        dir_path = os.path.join(tmp_directory, 'collections', archive_file_name)
+        txt_file_path = os.path.join(tmp_directory, f"{archive_file_name}.txt")
+
+        if os.path.exists(dir_path):
+            shutil.rmtree(dir_path)
+            logging.info(f"Deleted directory: {dir_path}")
+        else:
+            logging.warning(f"Directory not found: {dir_path}")
+
+        if os.path.exists(txt_file_path):
+            os.remove(txt_file_path)
+            logging.info(f"Deleted file: {txt_file_path}")
+        else:
+            logging.warning(f"File not found: {txt_file_path}")
+
+    except Exception as e:
+        logging.error(f"Cleanup failed for {archive_file_name}: {e}")
+
+def archive(seed_urls, archive_file_name, item_identifier, directory, upload_dest_file, args):
+    try:
+        tmp_directory = args.tmp_directory
+        os.makedirs(tmp_directory, exist_ok=True)
+        seed_file_path = os.path.join(tmp_directory, f"{archive_file_name}.txt")
 
         with open(seed_file_path, "w") as f:
             for url in seed_urls:
                 f.write(f"{url}\n")
 
         command = (
-            f"docker run -v {os.path.abspath(directory)}:/crawls/ "
+            f"docker run -v {os.path.abspath(tmp_directory)}:/crawls/ "
             f"-it webrecorder/browsertrix-crawler "
             f"crawl --urlFile /crawls/{archive_file_name}.txt --generateWACZ "
             f"--collection {archive_file_name} --timeLimit {args.time_limit}"
@@ -102,67 +158,24 @@ def archive(seed_urls, archive_file_name, directory, args):
             logging.error(line.strip())
 
         process.wait()
-
+        move_wacz(directory, archive_file_name, tmp_directory)
+        upload_wacz(directory, archive_file_name, item_identifier, upload_dest_file, args)
+        delete_warc_dir(archive_file_name, tmp_directory)
     except subprocess.SubprocessError as e:
         logging.error(f"Archiving subprocess failed: {e}")
-
-
-# Update upload_wacz to take args
-def upload_wacz(dst_file, args):
-    try:
-        logging.info(f'Uploading to Internet Archive: {dst_file}')
-        upload(
-            args.upload_identifier,
-            files=[dst_file],
-            metadata={
-                'collection': args.collection,
-                'uploader': args.uploader,
-                'mediatype': args.mediatype
-            }
-        )
-        logging.info(f'Successfully uploaded: {args.upload_identifier}/{dst_file}')
-    except Exception as e:
-        logging.error(f"Error Uploading {dst_file}: {e}")
-
-
-def move_wacz(dest_dir, archive_file_name):
-    try:
-        os.makedirs(dest_dir, exist_ok=True)
-        wacz_file = os.path.join('collections', archive_file_name, f"{archive_file_name}.wacz")
-        dest_path = os.path.join(dest_dir, f"{archive_file_name}.wacz")
-        if os.path.exists(wacz_file):
-            shutil.move(wacz_file, dest_path)
-            logging.info(f"Moved WACZ to: {dest_path}")
-        else:
-            logging.warning(f"WACZ file not found: {wacz_file}")
-    except Exception as e:
-        logging.error(f"Error moving WACZ file: {e}")
-
-
-def delete_warc_dir(archive_file_name, directory):
-    try:
-        dir_path = os.path.join(directory, 'collections', archive_file_name)
-        txt_file_path = os.path.join(directory, f"{archive_file_name}.txt")
-
-        if os.path.exists(dir_path):
-            shutil.rmtree(dir_path)
-            logging.info(f"Deleted: {dir_path}")
-        if os.path.exists(txt_file_path):
-            os.remove(txt_file_path)
-            logging.info(f"Deleted: {txt_file_path}")
-
-    except Exception as e:
-        logging.error(f"Cleanup failed for {archive_file_name}: {e}")
 
 
 def process_publication(state, publication, timestamp, args, sniffer):
     year, month, day = timestamp.year, timestamp.month, timestamp.day
     website_url = publication.get("website")
-    hostname = urlparse(website_url).hostname
+    hn = urlparse(website_url).hostname
+    hostname = hn.replace('www.', '')
+    cleaned_hostname = hostname.replace('.', '-')
 
-    tmp_directory = "tmp"
-    directory = os.path.join(f"{args.collection}-{state}-{year}-{month}", str(day), hostname)
-    archive_file_name = f"{hostname}-{timestamp.strftime('%Y%m%dT%H%M%S')}"
+    item_identifier = f"{args.collection}-{state.lower()}-{year}-{month}"
+    directory = os.path.join(args.collection_directory, item_identifier, str(day), cleaned_hostname)
+    archive_file_name = f"{cleaned_hostname}-{timestamp.strftime('%Y%m%dT%H%M%S')}"
+    upload_dest_file = f"{str(day)}/{cleaned_hostname}/{archive_file_name}.wacz"
 
     seed_urls = []
 
@@ -194,10 +207,8 @@ def process_publication(state, publication, timestamp, args, sniffer):
             logging.error(f"Failed to scrape {website_url}: {e}")
 
     if seed_urls:
-        archive(seed_urls, archive_file_name, tmp_directory, args)
-        move_wacz(directory, archive_file_name)
-        upload_wacz(os.path.join(directory, f"{archive_file_name}.wacz"), args)
-        delete_warc_dir(archive_file_name, tmp_directory)
+        seed_urls.append(website_url)
+        archive(seed_urls, archive_file_name, item_identifier, directory, upload_dest_file, args)
     else:
         logging.warning(f"No valid URLs for {website_url}")
 
