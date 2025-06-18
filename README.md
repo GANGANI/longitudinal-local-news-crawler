@@ -7,28 +7,31 @@ This Python-based crawler scrapes and archives local news articles from various 
 ## Setup Instructions
 
 1. **Clone the repository:**
-   ```bash
-   git clone https://github.com/GANGANI/longitudinal-local-news-crawler.git
-   cd longitudinal-local-news-crawler
-   ```
+   
+      ```bash
+      git clone https://github.com/GANGANI/longitudinal-local-news-crawler.git
+      cd longitudinal-local-news-crawler
+      ```
 
-2. **Install dependencies**
+3. **Install dependencies**
 
-   Make sure you have Python 3.8+ and pip installed.
-   ```bash
-   pip install -r requirements.txt
-   ```
-3. **Install Docker:**
+      Make sure you have Python 3.8+ and pip installed.
+      ```bash
+      pip install -r requirements.txt
+      ```
+4. **Install Docker:**
 
-  - The crawler uses Browsertrix Crawler via Docker to archive webpages.
-  - Ensure Docker is installed and running on your system.
+     - The crawler uses Browsertrix Crawler via Docker to archive webpages.
+     - Ensure Docker is installed and running on your system.
 
-4. **Internet Archive Upload (Optional)**
-   If internetarchive credentials are configured and Docker is running, the .wacz files will be uploaded to archive.org.
-   To configure credentials:
-   ```bash
-   ia configure
-   ```
+5. **Internet Archive Upload (Optional)**
+   - If internetarchive credentials are configured and Docker is running, the `.wacz` files will be uploaded to archive.org.
+   - To configure credentials:
+      ```bash
+      ia configure
+      ```
+
+---
 
 ## ⚙️ Command-line Arguments
 
