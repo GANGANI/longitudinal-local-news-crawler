@@ -4,7 +4,7 @@ This Python-based crawler scrapes and archives local news articles from various 
 
 ---
 
-## Setup Instructions
+## 📦 Setup Instructions
 
 1. **Clone the repository:**
    
@@ -23,7 +23,11 @@ This Python-based crawler scrapes and archives local news articles from various 
 
      - The crawler uses Browsertrix Crawler via Docker to archive webpages.
      - Ensure Docker is installed and running on your system.
-
+     - Run the following command
+       ```bash
+       docker pull webrecorder/browsertrix-crawler
+       ```
+       
 5. **Internet Archive Upload (Optional)**
    - If internetarchive credentials are configured and Docker is running, the `.wacz` files will be uploaded to archive.org.
    - To configure credentials:
@@ -31,9 +35,21 @@ This Python-based crawler scrapes and archives local news articles from various 
       ia configure
       ```
 
+6. **Setup Cronjos**
+  - Edit cronjobs by running the following command
+    ```bash
+    cronjob -e
+    ```
+  - Then add the following line to set up regular verification of wacz file uploads and delete from the local if you are uploading wacz files to 
 ---
 
 ## ⚙️ Command-line Arguments
+
+Run the crawler.py as follows with the required command line arguments
+
+```bash
+python crawler.py --<arg> <arg_value>
+```
 
 | Argument               | Default                                                      | Description |
 |------------------------|--------------------------------------------------------------|-------------|
