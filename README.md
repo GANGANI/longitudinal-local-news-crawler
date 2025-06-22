@@ -70,7 +70,13 @@ python crawler.py --<arg> <arg_value>
 
 ## ⚙️ Internet Archive Collection
 
-https://archive.org/details/us-local-news-data
+us-local-news-data
+│   ├── us-local-news-data-<state>-<year>-<month>
+│   │   └── <day>
+│   │       └── <hostname>
+│   │               ├── <{cleaned_hostname}-{timestamp}>.warcz
+
+Internet ARchive Collection: https://archive.org/details/us-local-news-data
 
 ---
 
