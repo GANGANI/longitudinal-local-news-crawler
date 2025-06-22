@@ -1,6 +1,6 @@
 # Longitudinal Local News Crawler
 
-This Python-based crawler scrapes and archives local news articles from various media publications using RSS feeds and direct website scraping. It stores the collected articles in `.wacz` format and optionally uploads them to the Internet Archive.
+This Python-based crawler scrapes and archives local news articles from various media publications using RSS feeds and direct website scraping. It stores the collected articles in `.wacz` format and uploads them to the Internet Archive.
 
 ---
 
@@ -29,7 +29,7 @@ This Python-based crawler scrapes and archives local news articles from various 
        ```
        
 5. **Internet Archive Upload (Optional)**
-   - If internetarchive credentials are configured and Docker is running, the `.wacz` files will be uploaded to archive.org.
+   - If Internet Archive credentials are configured and Docker is running, the `.wacz` files will be uploaded to archive.org.
    - To configure credentials:
       ```bash
       ia configure
@@ -73,12 +73,13 @@ python crawler.py --<argument> <value>
 
 
 ## 🗂️ Internet Archive Collection
-
+```
 us-local-news-data
 │   ├── us-local-news-data-<state>-<year>-<month>
 │   │   └── <day>
 │   │       └── <hostname>
 │   │               ├── <{cleaned_hostname}-{timestamp}>.warcz
+```
 
 Internet Archive Collection: https://archive.org/details/us-local-news-data
 
