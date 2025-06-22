@@ -36,20 +36,24 @@ This Python-based crawler scrapes and archives local news articles from various 
       ```
 
 6. **Setup Cronjos**
-  - Edit cronjobs by running the following command
+  - Set up a cron job to verify and delete .wacz files weekly:
     ```bash
     cronjob -e
     ```
-  - Then add the following line to set up regular verification of wacz file uploads and delete from the local if you are uploading wacz files to 
----
+  - Add the following line:
+    ```
+    * * * * * /path/to/python /path/to/verify_delete.py
+    ```
 
-## ⚙️ Command-line Arguments
+## ⚙️ Usage
 
 Run the crawler.py as follows with the required command line arguments
 
 ```bash
-python crawler.py --<arg> <arg_value>
+python crawler.py --<argument> <value>
 ```
+
+### Command line arguments
 
 | Argument               | Default                                                      | Description |
 |------------------------|--------------------------------------------------------------|-------------|
@@ -68,7 +72,7 @@ python crawler.py --<arg> <arg_value>
 | `--timing_log`         | `timing_log.txt`                                             | File to save the processing time (in seconds) for each publication. |
 
 
-## ⚙️ Internet Archive Collection
+## 🗂️ Internet Archive Collection
 
 us-local-news-data
 │   ├── us-local-news-data-<state>-<year>-<month>
@@ -76,7 +80,7 @@ us-local-news-data
 │   │       └── <hostname>
 │   │               ├── <{cleaned_hostname}-{timestamp}>.warcz
 
-Internet ARchive Collection: https://archive.org/details/us-local-news-data
+Internet Archive Collection: https://archive.org/details/us-local-news-data
 
 ---
 
