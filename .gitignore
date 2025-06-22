@@ -2,7 +2,7 @@ experiments/*
 .DS_Store
 ._.DS_Store
 *.pyc
-
+.idea
 build
 /dist/
 /*.egg-info
