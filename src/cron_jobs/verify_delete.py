@@ -112,9 +112,9 @@ def main(args):
 # --- CLI ---
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--collection", required=True)
+    parser.add_argument("--collection", default="us-local-news-data", required=True)
     parser.add_argument("--collection_directory", required=True)
-    parser.add_argument("--uploader", required=True)
+    parser.add_argument("--uploader", default="Alexander C. Nwala <alexandernwala@gmail.com>", help="Uploader identity")
     parser.add_argument("--mediatype", default="web", help="Default: web")
 
     args = parser.parse_args()
