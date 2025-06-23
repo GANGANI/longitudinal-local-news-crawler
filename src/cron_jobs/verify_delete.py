@@ -74,7 +74,7 @@ def process_item_for_state(state, year, month, day, args):
                 args
             )
     else:
-        logging.info("✅ All local files exist on the Internet Archive.")
+        logging.info("All local files exist on the Internet Archive.")
 
     if only_remote:
         logging.info("These files exist remotely but not locally:")
