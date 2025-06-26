@@ -8,6 +8,8 @@ import datetime
 import requests
 import subprocess
 import time
+import internetarchive
+import concurrent.futures
 from bs4 import BeautifulSoup
 from urllib.parse import urljoin, urlparse, unquote, urlsplit, urlunparse, quote, parse_qsl, urlencode
 from storysniffer import StorySniffer
@@ -34,16 +36,19 @@ def get_arguments():
     parser.add_argument("--log", default="news_scraper.log", help="Path to log file")
     parser.add_argument("--log_level", default="CRITICAL", help="Logging level (DEBUG, INFO, WARNING, ERROR, CRITICAL)")
     parser.add_argument("--mediatype", default="web", help="Media type for Internet Archive upload")
-    parser.add_argument("--collection", default="USLNDA", help="Collection name / directory prefix")
+    parser.add_argument("--collection", default="us-local-news-data", help="Collection name of the internet archive")
+    parser.add_argument("--item_identifier", default="USLNDA", help="Prefix of the item identifier")
     parser.add_argument("--uploader", default="Alexander C. Nwala <alexandernwala@gmail.com>", help="Uploader identity")
-    parser.add_argument("--time_limit", type=int, default=360, help="Time limit (in seconds) for archiving subprocess")
-    parser.add_argument("--collection_directory", default="collection", help="Directory to collect warcz files")
-    parser.add_argument("--tmp_directory", default="tmp", help="Directory to temporarily collect warcz files")
-    parser.add_argument("--delete_warc",type=bool, default=False, help="Delete the warc file after uploading to internet archive")
-    parser.add_argument("--upload_warc",type=bool, default=False, help="Upload the warc file to internet archive")
+    parser.add_argument("--time_limit", type=int, help="Time limit (in seconds) for archiving subprocess")
+    parser.add_argument("--time_per_url", type=int, default=60, help="Time limit (in seconds) for archiving one article")
+    parser.add_argument("--collection_directory", default="collection", help="Directory to collect wacz files")
+    parser.add_argument("--tmp_directory", default="tmp", help="Directory to temporarily collect wacz files")
+    parser.add_argument("--delete_wacz",type=bool, default=True, help="Delete the wacz file after uploading to internet archive")
+    parser.add_argument("--upload_wacz",type=bool, default=True, help="Upload the wacz file to internet archive")
     parser.add_argument("--start", type=int, default=0, help="Start index of states to process")
     parser.add_argument("--end", type=int, default=None, help="End index (exclusive) of states to process")
-    
+    parser.add_argument('--once_per_day', type=bool, default=True, help='Run only once per day for all states')
+    parser.add_argument('--workers', type=int, default=10, help='Number of workers for crawling per run')
     return parser.parse_args()
 
 HEADERS = {
@@ -92,9 +97,9 @@ def extract_article_urls_from_html(html_content, base_url):
 def move_wacz(directory, archive_file_name, tmp_directory):
     """Move generated WACZ file to final collection directory."""
     try:
-        logging.info(f"Started moving warcz file {archive_file_name}")
+        logging.info(f"Started moving wacz file {archive_file_name}")
         os.makedirs(directory, exist_ok=True)
-        wacz_file = os.path.join(tmp_directory, 'collections', archive_file_name, f"{archive_file_name}.warc.gz")
+        wacz_file = os.path.join(tmp_directory, 'collections', archive_file_name, f"{archive_file_name}.wacz")
         if os.path.exists(wacz_file):
             shutil.move(wacz_file, directory)
             logging.info(f"Moved WACZ to: {directory}")
@@ -106,12 +111,12 @@ def move_wacz(directory, archive_file_name, tmp_directory):
 
 def upload_wacz(directory, archive_file_name, item_identifier, args):
     """Upload WACZ file to Internet Archive if enabled."""
-    if not args.upload_warc:
+    if not args.upload_wacz:
         return
 
     try:
-        src_file = os.path.join(directory, f"{archive_file_name}.warc.gz")
-        upload_dest_file = f"./{archive_file_name}.warc.gz"
+        src_file = os.path.join(directory, f"{archive_file_name}.wacz")
+        upload_dest_file = f"./{archive_file_name}.wacz"
         logging.info(f'Uploading to Internet Archive: {item_identifier}/{upload_dest_file}')
         upload(
             item_identifier,
@@ -120,16 +125,17 @@ def upload_wacz(directory, archive_file_name, item_identifier, args):
                 'collection': args.collection,
                 'uploader': args.uploader,
                 'mediatype': args.mediatype
-            }
+            },
+            queue_derive=False
         )
         logging.info(f'Successfully uploaded: {item_identifier}/{upload_dest_file}')
     except Exception as e:
         logging.error(f"Error Uploading {item_identifier}/{upload_dest_file}: {e}")
 
 
-def delete_warc_dir(archive_file_name, tmp_directory, args):
-    """Delete temporary WARC file and its directory if enabled."""
-    if not args.delete_warc:
+def delete_wacz_dir(archive_file_name, tmp_directory, args):
+    """Delete temporary WACZ file and its directory if enabled."""
+    if not args.delete_wacz:
         return
     
     try:
@@ -152,7 +158,7 @@ def delete_warc_dir(archive_file_name, tmp_directory, args):
         logging.error(f"Cleanup failed for {archive_file_name}: {e}")
 
 
-def archive(seed_urls, archive_file_name, item_identifier, args):
+def archive(seed_urls, archive_file_name, item_identifier, num_seed_urls, args):
     """Run Browsertrix Crawler inside Docker to archive seed URLs."""
     try:
         directory = os.path.join(args.collection_directory, item_identifier)
@@ -164,11 +170,18 @@ def archive(seed_urls, archive_file_name, item_identifier, args):
             for url in seed_urls:
                 f.write(f"{url}\n")
 
+        if args.time_limit:
+            timelimit = args.time_limit
+        else:
+            timelimit = (args.time_per_url * num_seed_urls) / (args.workers)
+        
+        logging.info(f"Timelimit for: {archive_file_name} is {timelimit}")
+
         command = (
             f"docker run -v {os.path.abspath(tmp_directory)}:/crawls/ "
             f"-it webrecorder/browsertrix-crawler "
-            f"crawl --urlFile /crawls/{archive_file_name}.txt --generateWACZ "
-            f"--collection {archive_file_name} --timeLimit {args.time_limit}"
+            f"crawl --urlFile /crawls/{archive_file_name}.txt"
+            f" --collection {archive_file_name} --timeLimit {timelimit} --generateWACZ --workers {args.workers}"
         )
 
         logging.info(f"Running archive subprocess: {command}")
@@ -182,7 +195,7 @@ def archive(seed_urls, archive_file_name, item_identifier, args):
         process.wait()
         move_wacz(directory, archive_file_name, tmp_directory)
         upload_wacz(directory, archive_file_name, item_identifier, args)
-        delete_warc_dir(archive_file_name, tmp_directory, args)
+        delete_wacz_dir(archive_file_name, tmp_directory, args)
     except subprocess.SubprocessError as e:
         logging.error(f"Archiving subprocess failed: {e}")
 
@@ -230,6 +243,12 @@ def process_publication(publication, sniffer, args):
         logging.warning(f"No valid URLs for {website_url}")
 
 
+def seconds_until_next_utc_midnight():
+    now = datetime.datetime.utcnow()
+    next_midnight = (now + datetime.timedelta(days=1)).replace(hour=0, minute=0, second=0, microsecond=0)
+    return (next_midnight - now).total_seconds()
+
+
 def main():
     args = get_arguments()
     setup_logger(args.log, args.log_level)
@@ -237,8 +256,21 @@ def main():
 
     logging.info("Starting news archiving process...")
 
+    timing_log_file = "timing_log.txt"
+    last_run_date = None
+
     while True:
         try:
+
+            current_date_str = datetime.datetime.utcnow().strftime('%Y-%m-%d')
+
+            if args.once_per_day and current_date_str == last_run_date:
+                # Already ran today; sleep until next midnight UTC
+                sleep_secs = seconds_until_next_utc_midnight()
+                logging.info(f"Already ran today. Sleeping until next UTC midnight ({sleep_secs:.0f} sec)...")
+                time.sleep(sleep_secs)
+                continue
+
             with open(args.input, "r") as f:
                 data = json.load(f)
 
@@ -247,29 +279,66 @@ def main():
             end = args.end if args.end is not None else len(states)
             selected_states = states[start:end]
 
+            timestamp = datetime.datetime.now(datetime.timezone.utc)
+            item_identifier = f"{args.item_identifier}-{timestamp.strftime('%Y%m%d')}"
+
             for state in selected_states:
                 logging.info(f"Processing state: {state}")
 
                 seed_urls = []
-                timestamp = datetime.datetime.now(datetime.timezone.utc)
-                item_identifier = f"{args.collection}-{timestamp.strftime('%Y%m')}"
-                archive_file_name = f"{args.collection}-{state}-{timestamp.strftime('%Y%m')}-{timestamp.strftime('%H%M%S')}"
+                timestamp_state = datetime.datetime.now(datetime.timezone.utc)
+                if timestamp.strftime('%Y%m%d') != timestamp_state.strftime('%Y%m%d'):
+                    break
 
+                archive_file_name = f"{args.item_identifier}-{state}-{timestamp.strftime('%Y%m%d')}-{timestamp.strftime('%H%M%S')}"
 
                 publications = data[state]
+
+                seed_start_time = time.time()
+
                 for news_media in ['newspaper', 'tv', 'radio', 'broadcast']:
-                    for publication in publications.get(news_media, []):
-                        if publication.get("website_status_code") in range(200, 400):                            
-                            publication_urls = process_publication(publication, sniffer, args)
-                            seed_urls.extend(publication_urls)
-                archive(seed_urls, archive_file_name, item_identifier, args)
+                    publications_list = [
+                        pub for pub in publications.get(news_media, [])
+                        if pub.get("website_status_code") in range(200, 400)
+                    ]
+
+                    with concurrent.futures.ThreadPoolExecutor(max_workers=20) as executor:
+                        futures = [executor.submit(process_publication, pub, sniffer, args) for pub in publications_list]
+                        for future in concurrent.futures.as_completed(futures):
+                            try:
+                                publication_urls = future.result()
+                                if publication_urls:
+                                    seed_urls.extend(publication_urls)
+                            except Exception as e:
+                                logging.error(f"Error processing publication in parallel: {e}")
+
+                seed_end_time = time.time()
+                seed_duration = seed_end_time - seed_start_time
+
+                archive_start_time = time.time()
+                if seed_urls:
+                    archive(seed_urls, archive_file_name, item_identifier, len(seed_urls), args)
+                else:
+                    logging.warning(f"No seed URLs collected for state: {state}. Skipping archive.")
+                archive_end_time = time.time()
+                archive_duration = archive_end_time - archive_start_time
+
+                # Log the timings to a file
+                with open(timing_log_file, "a") as logf:
+                    logf.write(f"{state}: Seed collection time: {seed_duration:.2f} sec, Archive time: {archive_duration:.2f} sec\n")
+
+            s = internetarchive.get_session()
+            s.submit_tasks(item_identifier, cmd='derive.php')
+
+            last_run_date = current_date_str
+
+            if args.once_per_day:
+                sleep_secs = seconds_until_next_utc_midnight()
+                logging.info(f"Daily run completed. Sleeping until next UTC midnight ({sleep_secs:.0f} sec)...")
+                time.sleep(sleep_secs)
 
         except Exception as e:
             logging.error(f"Fatal error: {e}")
-
-        logging.info(f"Sleeping for {args.sleep} seconds before next iteration...")
-        time.sleep(args.sleep)
-
 
 if __name__ == "__main__":
     main()
