@@ -1,6 +1,6 @@
 # Longitudinal Local News Crawler
 
-This Python-based crawler scrapes and archives local news articles from various media publications using RSS feeds and direct website scraping. It stores the collected articles in `.wacz` format and uploads them to the Internet Archive.
+This Python-based crawler scrapes and archives local news articles from various media publications using RSS feeds and direct website scraping. It stores the collected articles in `.warc.gz` format and uploads them to the Internet Archive.
 
 ---
 
