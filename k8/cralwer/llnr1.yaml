@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: crawler-deployment-1
+  labels:
+    app: crawler-1
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: crawler-1
+  template:
+    metadata:
+      labels:
+        app: crawler-1
+    spec:
+      securityContext:
+        runAsUser: 261440
+        runAsGroup: 1132
+        fsGroup: 1132
+      containers:
+      - name: crawler-1
+        image: ganganiariyarathne/local-news-crawler-1:latest
+        args: ["/app1/crawler.py", "--end", "12", "--upload_warc", "False"]
+        env:
+        - name: PYTHONUNBUFFERED
+          value: "1"
+        - name: PYTHONIOENCODING
+          value: "UTF-8"
+        - name: HOME
+          value: /home/btrix
+        - name: TMPDIR
+          value: /tmp
+        resources:
+          requests:
+            cpu: "15"
+            memory: "30Gi"
+            ephemeral-storage: "300Gi"
+          limits:
+            cpu: "30"
+            memory: "60Gi"
+            ephemeral-storage: "500Gi"
+        volumeMounts:
+        - name: crawls
+          mountPath: /app1/crawls
+      volumes:
+      - name: crawls
+        persistentVolumeClaim:
+          claimName: gchewababarand-ceph-pv1

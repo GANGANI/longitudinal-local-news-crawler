@@ -1,0 +1,34 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: ia-checker
+spec:
+  schedule: "0 0 * * *"  # Run daily at midnight
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          securityContext:
+            runAsUser: 261440
+            runAsGroup: 1132
+            fsGroup: 1132
+          containers:
+          - name: ia-checker
+            image: your-registry/ia-checker:latest
+            resources:
+              requests:
+                cpu: "15"
+                memory: "30Gi"
+                ephemeral-storage: "300Gi"
+              limits:
+                cpu: "30"
+                memory: "60Gi"
+                ephemeral-storage: "500Gi"
+            volumeMounts:
+            - name: crawls
+              mountPath: /app1/crawls
+          restartPolicy: OnFailure
+          volumes:
+          - name: crawls
+            persistentVolumeClaim:
+              claimName: gchewababarand-ceph-pv1

@@ -55,21 +55,32 @@ python crawler.py --<argument> <value>
 
 ### Command line arguments
 
-| Argument               | Default                                                      | Description |
-|------------------------|--------------------------------------------------------------|-------------|
-| `--input`              | `output.json`                                                | Path to the input JSON file containing state-wise media data. |
-| `--max_articles`       | `5`                                                          | Maximum number of articles to scrape per publication. |
-| `--log`                | `news_scraper.log`                                           | Log file path for storing runtime logs. |
-| `--log_level`          | `INFO`                                                       | Logging level: one of `DEBUG`, `INFO`, `WARNING`, `ERROR`, or `CRITICAL`. |
-| `--mediatype`          | `web`                                                        | Media type used for metadata during Internet Archive upload. |
-| `--collection`         | `us-local-news-data`                                         | Collection name or prefix used in upload path and local directory structure. |
-| `--uploader`           | `"Alexander C. Nwala <alexandernwala@gmail.com>"`            | Uploader metadata used during Internet Archive upload. |
-| `--time_limit`         | `360`                                                        | Time limit (in seconds) for each archiving subprocess. |
-| `--collection_directory` | `collection`                                               | Directory to save finalized `.wacz` files. |
-| `--tmp_directory`      | `tmp`                                                        | Temporary working directory used during web archiving. |
-| `--start`              | `0`                                                          | Start index (inclusive) for states to process from the input JSON. |
-| `--end`                | `None`                                                       | End index (exclusive) for states to process. If `None`, all remaining states are processed. |
-| `--timing_log`         | `timing_log.txt`                                             | File to save the processing time (in seconds) for each publication. |
+# Command-Line Arguments
+
+| Argument                 | Default Value                                             | Description                                                   |
+|--------------------------|------------------------------------------------------------|---------------------------------------------------------------|
+| `--input`                | `"output.json"`                                            | Path to JSON input file                                       |
+| `--sleep`                | `3600`                                                     | Time between iterations (in seconds)                          |
+| `--max_articles`         | `5`                                                        | Maximum number of articles to scrape per publication          |
+| `--log`                  | `"news_scraper.log"`                                       | Path to log file                                              |
+| `--log_level`            | `"CRITICAL"`                                               | Logging level (DEBUG, INFO, WARNING, ERROR, CRITICAL)         |
+| `--mediatype`            | `"web"`                                                    | Media type for Internet Archive upload                        |
+| `--collection`           | `"us-local-news-data"`                                     | Collection name of the Internet Archive                       |
+| `--item_identifier`      | `"USLNDA"`                                                 | Prefix of the item identifier                                 |
+| `--uploader`             | `"Alexander C. Nwala <alexandernwala@gmail.com>"`         | Uploader identity                                             |
+| `--time_limit`           | `None`                                                     | Time limit (in seconds) for archiving subprocess              |
+| `--time_per_url`         | `60`                                                       | Time limit (in seconds) for archiving one article             |
+| `--collection_directory` | `"collection"`                                             | Directory to collect WARC files                               |
+| `--tmp_directory`        | `"tmp"`                                                    | Directory to temporarily collect WARC files                   |
+| `--delete_warc`          | `True`                                                     | Delete the WARC file after uploading to Internet Archive      |
+| `--upload_warc`          | `True`                                                     | Upload the WARC file to Internet Archive                      |
+| `--start`                | `0`                                                        | Start index of states to process                              |
+| `--end`                  | `None`                                                     | End index (exclusive) of states to process                    |
+| `--once_per_day`         | `True`                                                     | Run only once per day for all states                          |
+| `--workers`              | `10`                                                       | Number of workers for crawling per run                        |
+| `--delete_uploaded_warc`| `True`                                                     | Delete the .warc file after successful upload to Archive      |
+| `--rolloverSize`         | `10000000000`                                              | Declare the rollover size                                     |
+
 
 
 ## 🗂️ Internet Archive Collection
