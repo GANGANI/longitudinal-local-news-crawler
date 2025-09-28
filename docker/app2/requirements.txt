@@ -1,0 +1,6 @@
+feedparser
+requests
+bs4
+storysniffer
+scikit-learn==1.5.1
+internetarchive
