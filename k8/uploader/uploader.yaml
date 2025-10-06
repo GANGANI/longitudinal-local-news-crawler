@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: warc-uploader
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: warc-uploader
+  template:
+    metadata:
+      labels:
+        app: warc-uploader
+    spec:
+      securityContext:
+        runAsUser: 261440
+        runAsGroup: 1132
+        fsGroup: 1132
+      containers:
+        - name: warc-uploader
+          image: ganganiariyarathne/warc-uploader:latest
+          env:
+          - name: PYTHONUNBUFFERED
+            value: "1"
+          - name: PYTHONIOENCODING
+            value: "UTF-8"
+          - name: HOME
+            value: /home/crawler
+          volumeMounts:
+          - name: crawls
+            mountPath: /app1/ia-collection
+          resources:
+            requests:
+              cpu: "4"
+              memory: "8Gi"
+              ephemeral-storage: "40Gi"
+            limits:
+              cpu: "8"
+              memory: "16Gi"
+              ephemeral-storage: "70Gi"
+      volumes:
+      - name: crawls
+        persistentVolumeClaim:
+          claimName: gchewababarand-ceph-pv1

@@ -1,0 +1,69 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: crawler-deployment-2
+  labels:
+    app: crawler-2
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: crawler-2
+  template:
+    metadata:
+      labels:
+        app: crawler-2
+    spec:
+      securityContext:
+        runAsUser: 261440
+        runAsGroup: 1132
+        fsGroup: 1132
+      containers:
+      - name: crawler-2
+        image: ganganiariyarathne/local-news-crawler-2:latest
+        args: ["/app2/browsertrix-crawler.py", "--start", "23"]
+        env:
+        - name: PYTHONUNBUFFERED
+          value: "1"
+        - name: PYTHONIOENCODING
+          value: "UTF-8"
+        - name: HOME
+          value: /home/btrix2
+        - name: TMPDIR
+          value: /tmp
+        # - name: BROWSERTRIX_CHROMIUM   
+        #   value: "/usr/bin/chromium"
+        - name: CHROME_ARGS
+          value: "--no-sandbox --disable-dev-shm-usage"
+        resources:
+          requests:
+            cpu: "15"
+            memory: "30Gi"
+            ephemeral-storage: "300Gi"
+          limits:
+            cpu: "30"
+            memory: "60Gi"
+            ephemeral-storage: "500Gi"
+        volumeMounts:
+        - name: crawls
+          mountPath: /app2/ia-collection-2
+        - name: dshm
+          mountPath: /dev/shm  
+
+        # 👇 Liveness probe (log freshness check)
+        livenessProbe:
+          exec:
+            command: ["bash", "-c", "find /app1/news_scraper.log -mmin -60 | grep ."]
+          initialDelaySeconds: 1800
+          periodSeconds: 1800
+          timeoutSeconds: 60
+          failureThreshold: 3
+
+      volumes:
+      - name: crawls
+        persistentVolumeClaim:
+          claimName: gchewababarand-ceph-pv1
+      - name: dshm
+        emptyDir:
+          medium: Memory
+          sizeLimit: 4Gi   

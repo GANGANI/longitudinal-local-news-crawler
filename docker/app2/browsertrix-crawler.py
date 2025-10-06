@@ -27,9 +27,9 @@ from email.mime.multipart import MIMEMultipart
 # === CONFIGURATION ===
 SMTP_SERVER = "smtp.gmail.com"
 SMTP_PORT = 587
-EMAIL_USER = "gangani95ariyarathne@gmail.com"
-EMAIL_PASS = "hwms isib tnxz gdon"
-EMAIL_TO = "localnewscrawler@gmail.com"
+EMAIL_USER = "ga****@gmail.com"
+EMAIL_PASS = ""
+EMAIL_TO = "local***@gmail.com"
 
 
 def setup_logger(args):
